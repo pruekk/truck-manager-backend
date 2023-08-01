@@ -18,10 +18,10 @@ router.post("/", verifyTokenAndAdmin, async (req, res) => {
 });
 
 //UPDATE
-router.put("/:id", verifyTokenAndAuthorization, async (req, res) => {
+router.put("/:carId", verifyTokenAndAuthorization, async (req, res) => {
   try {
-    const updatedCar = await Car.findByIdAndUpdate(
-      req.params.id,
+    const updatedCar = await Car.findOneAndUpdate(
+      { carId: req.params.carId },
       {
         $set: req.body,
       },
@@ -34,9 +34,9 @@ router.put("/:id", verifyTokenAndAuthorization, async (req, res) => {
 });
 
 //DELETE
-router.delete("/:id", verifyTokenAndAdmin, async (req, res) => {
+router.delete("/:carId", verifyTokenAndAdmin, async (req, res) => {
   try {
-    await Car.findByIdAndDelete(req.params.id);
+    await Car.findOneAndDelete({ carId: req.params.carId });
     res.status(200).json("Car has been deleted.");
   } catch (err) {
     res.status(500).json(err);
@@ -44,9 +44,9 @@ router.delete("/:id", verifyTokenAndAdmin, async (req, res) => {
 });
 
 //GET
-router.get("/:id", verifyTokenAndAuthorization, async (req, res) => {
+router.get("/:carId", verifyTokenAndAuthorization, async (req, res) => {
   try {
-    const Cars = await Car.findById(req.params.id);
+    const Cars = await Car.findOne({ carId: req.params.carId });
     res.status(200).json(Cars);
   } catch (err) {
     res.status(500).json(err);
