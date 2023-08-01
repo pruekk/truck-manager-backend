@@ -2,7 +2,7 @@ const Factory = require("../models/base/Factory");
 const {
   verifyTokenAndAuthorization,
   verifyTokenAndAdmin,
-} = require("./verifyToken");
+} = require("../utils/verifyToken");
 const { formatDate } = require("../utils/formatDate");
 
 const router = require("express").Router();

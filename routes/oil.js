@@ -2,15 +2,15 @@ const Oil = require("../models/base/Oil");
 const {
   verifyTokenAndAuthorization,
   verifyTokenAndAdmin,
-} = require("./verifyToken");
+} = require("../utils/verifyToken");
 const { formatDate } = require("../utils/formatDate");
 
 const router = require("express").Router();
 
 //CREATE
 router.post("/", verifyTokenAndAdmin, async (req, res) => {
-  if (req.body.startDate) {
-    req.body.startDate = formatDate(req.body.startDate);
+  if (req.body.date) {
+    req.body.date = formatDate(req.body.date);
   }
 
   const newOil = new Oil(req.body);
@@ -25,8 +25,8 @@ router.post("/", verifyTokenAndAdmin, async (req, res) => {
 //UPDATE
 router.put("/:id", verifyTokenAndAuthorization, async (req, res) => {
   try {
-    if (req.body.startDate) {
-      req.body.startDate = formatDate(req.body.startDate);
+    if (req.body.date) {
+      req.body.date = formatDate(req.body.date);
     }
     const updatedOil = await Oil.findByIdAndUpdate(
       req.params.id,
