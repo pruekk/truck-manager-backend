@@ -3,16 +3,14 @@ const {
   verifyTokenAndAuthorization,
   verifyTokenAndAdmin,
 } = require("./verifyToken");
+const { formatDate } = require("./formatDate");
 
 const router = require("express").Router();
-const dayjs = require('dayjs');
-const utc = require('dayjs/plugin/utc')
-dayjs.extend(utc)
 
 //CREATE
 router.post("/", verifyTokenAndAdmin, async (req, res) => {
   if (req.body.startDate) {
-    req.body.startDate = dayjs(req.body.startDate).subtract(7, 'hour').utcOffset(0, true).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+    req.body.startDate = formatDate(req.body.startDate);
   }
 
   const newFactory = new Factory(req.body);
@@ -28,7 +26,7 @@ router.post("/", verifyTokenAndAdmin, async (req, res) => {
 router.put("/:id", verifyTokenAndAuthorization, async (req, res) => {
   try {
     if (req.body.startDate) {
-      req.body.startDate = dayjs(req.body.startDate).subtract(7, 'hour').utcOffset(0, true).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+      req.body.startDate = formatDate(req.body.startDate);
     }
     const updatedFactory = await Factory.findByIdAndUpdate(
       req.params.id,
