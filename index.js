@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const authRoute = require("./routes/auth");
 const factoryRoute = require("./routes/factory");
+const oilRoute = require("./routes/oil");
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoute);
 app.use("/api/factory", factoryRoute);
+app.use("/api/oil", oilRoute);
 
 app.listen(process.env.PORT || 5001, () => {
   console.log("Backend server is running!");
