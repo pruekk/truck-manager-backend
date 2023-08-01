@@ -3,7 +3,7 @@ const {
   verifyTokenAndAuthorization,
   verifyTokenAndAdmin,
 } = require("./verifyToken");
-const { formatDate } = require("./formatDate");
+const { formatDate } = require("../utils/formatDate");
 
 const router = require("express").Router();
 
