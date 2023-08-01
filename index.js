@@ -7,6 +7,7 @@ const authRoute = require("./routes/auth");
 const factoryRoute = require("./routes/factory");
 const oilRoute = require("./routes/oil");
 const carRoute = require("./routes/car");
+const employeeRoute = require("./routes/employee");
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/factory", factoryRoute);
 app.use("/api/oil", oilRoute);
 app.use("/api/car", carRoute);
+app.use("/api/employee", employeeRoute);
 
 app.listen(process.env.PORT || 5001, () => {
   console.log("Backend server is running!");
