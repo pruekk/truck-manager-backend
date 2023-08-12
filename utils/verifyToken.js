@@ -1,10 +1,35 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/base/User");
+
+const customizeJwtToken = async (reqEmail) => {
+  const user = await User.findOne({
+    email: reqEmail,
+  });
+
+  !user && res.status(401).json("Wrong User Name");
+
+  return jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      allowedFactories: user.allowedFactories,
+      allowedFeatures: user.allowedFeatures,
+    },
+    process.env.JWT_TOKEN,
+    { expiresIn: "10h" }
+  );
+};
 
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader) {
-    const token = authHeader.split(" ")[1];
-    jwt.verify(token, process.env.JWT_TOKEN, (err, user) => {
+  let jwtToken = "";
+  if (req.headers["user-agent"].includes("Postman")) {
+    jwtToken = req.headers.authorization.split(" ")[1];
+  } else {
+    jwtToken = req.user.access_token;
+  }
+  if (jwtToken) {
+    jwt.verify(jwtToken, process.env.JWT_TOKEN, (err, user) => {
       if (err) res.status(403).json("Token is not valid!");
       req.user = user;
       next();
@@ -63,4 +88,5 @@ module.exports = {
   verifyToken,
   verifyTokenAndAuthorization,
   verifyTokenAndAdmin,
+  customizeJwtToken
 };

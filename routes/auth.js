@@ -1,9 +1,30 @@
 const router = require("express").Router();
+const passport = require("passport");
 const User = require("../models/base/User");
-const jwt = require("jsonwebtoken");
+const {
+  verifyTokenAndAdmin,
+  customizeJwtToken,
+} = require("../utils/verifyToken");
+
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const strategy = new GoogleStrategy(
+  {
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL,
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      const customToken = await customizeJwtToken(profile.emails[0].value);
+      return done(null, { ...profile, access_token: customToken });
+    } catch (err) {
+      return done(err, null);
+    }
+  }
+);
 
 //REGISTER
-router.post("/register", async (req, res) => {
+router.post("/register", verifyTokenAndAdmin, async (req, res) => {
   const newUser = new User({
     email: req.body.email,
     isAdmin: req.body.isAdmin,
@@ -19,35 +40,38 @@ router.post("/register", async (req, res) => {
   }
 });
 
-//LOGIN
-router.post("/login", async (req, res) => {
-  try {
-    const user = await User.findOne({
-      email: req.body.email,
-    });
-
-    !user && res.status(401).json("Wrong User Name");
-
-    const accessToken = jwt.sign(
-      {
-        id: user._id,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        allowedFactories: user.allowedFactories,
-        allowedFeatures: user.allowedFeatures,
-      },
-      process.env.JWT_TOKEN,
-      { expiresIn: "10h" }
-    );
-
-    res.status(200).json(accessToken);
-  } catch (err) {
-    res.status(500).json(err);
+//LOGIN WITH POSTMAN
+router.post("/login-postman", async (req, res) => {
+  if (req.headers.host.includes("localhost")) {
+    try {
+      const customToken = await customizeJwtToken(req.body.email);
+      res.status(200).json(customToken);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  } else {
+    res.status(405);
   }
 });
 
-/*
-  Login with google - https://chat.openai.com/share/6d450e0c-955f-44bf-a816-32f98497a6eb
-*/
+//LOGIN
+router.get(
+  "/login",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
 
-module.exports = router;
+//Google OAuth Callback
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  (req, res) => {
+    res.status(200).json(req.user);
+  }
+);
+
+//OAuth Full Cycle Get accessToken and refreshToken from DB
+// router.post("/token", (req, res) => {
+//   res.status(200).json({});
+// });
+
+module.exports = { router, strategy };
