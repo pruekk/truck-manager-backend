@@ -50,7 +50,7 @@ router.post("/login-postman", async (req, res) => {
       res.status(500).json(err);
     }
   } else {
-    res.status(405);
+    res.status(405).json({});
   }
 });
 
