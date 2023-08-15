@@ -24,12 +24,13 @@ const strategy = new GoogleStrategy(
 );
 
 //REGISTER
-router.post("/register", verifyTokenAndAdmin, async (req, res) => {
+router.post("/register", async (req, res) => {
   const newUser = new User({
     email: req.body.email,
-    isAdmin: req.body.isAdmin,
+    isAdmin: req.body.isAdmin || false,
     allowedFactories: req.body.allowedFactories,
     allowedFeatures: req.body.allowedFeatures,
+    is_actived: req.body.is_actived || false,
   });
 
   try {
@@ -45,6 +46,7 @@ router.post("/login-postman", async (req, res) => {
   if (req.headers.host.includes("localhost")) {
     try {
       const customToken = await customizeJwtToken(req.body.email);
+      console.log(`User: ${req.body.email} login!`);
       res.status(200).json(customToken);
     } catch (err) {
       res.status(500).json(err);
@@ -65,7 +67,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    res.status(200).json(req.user);
+    res.redirect("/");
   }
 );
 

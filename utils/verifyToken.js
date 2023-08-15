@@ -1,12 +1,19 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/base/User");
+const {
+  ACCOUNT_NOT_ACTIVED,
+  ACCOUNT_LOGIN_FAILED,
+  USER_NOT_FOUND,
+  USER_NOT_LOGIN,
+  ACTION_NOT_ALLOW,
+} = require("./handleResponse");
 
 const customizeJwtToken = async (reqEmail) => {
   const user = await User.findOne({
     email: reqEmail,
   });
 
-  !user && res.status(401).json("Wrong User Name");
+  !user && res.status(401).json(USER_NOT_FOUND);
 
   return jwt.sign(
     {
@@ -15,6 +22,7 @@ const customizeJwtToken = async (reqEmail) => {
       isAdmin: user.isAdmin,
       allowedFactories: user.allowedFactories,
       allowedFeatures: user.allowedFeatures,
+      is_actived: user.is_actived,
     },
     process.env.JWT_TOKEN,
     { expiresIn: "10h" }
@@ -22,20 +30,20 @@ const customizeJwtToken = async (reqEmail) => {
 };
 
 const verifyToken = (req, res, next) => {
-  let jwtToken = "";
-  if (req.headers["user-agent"].includes("Postman")) {
-    jwtToken = req.headers.authorization.split(" ")[1];
-  } else {
-    jwtToken = req.user.access_token;
-  }
-  if (jwtToken) {
+  try {
+    const jwtToken = req.headers["user-agent"].includes("Postman")
+      ? req.headers.authorization.split(" ")[1]
+      : req.user.access_token;
     jwt.verify(jwtToken, process.env.JWT_TOKEN, (err, user) => {
-      if (err) res.status(403).json("Token is not valid!");
+      if (err) res.status(403).json(ACCOUNT_LOGIN_FAILED);
+
+      !user.is_actived && res.status(400).json(ACCOUNT_NOT_ACTIVED);
+
       req.user = user;
       next();
     });
-  } else {
-    return res.status(401).json("You are not authenticated!");
+  } catch {
+    return res.status(401).json(USER_NOT_LOGIN);
   }
 };
 
@@ -64,11 +72,7 @@ const verifyTokenAndAuthorization = (req, res, next) => {
             return false;
         }
       } else {
-        res
-          .status(403)
-          .json(
-            `Permission denied for ${userFeature} with action ${userAction}`
-          );
+        res.status(403).json(ACTION_NOT_ALLOW);
       }
     }
   });
@@ -79,7 +83,7 @@ const verifyTokenAndAdmin = (req, res, next) => {
     if (req.user.isAdmin) {
       next();
     } else {
-      res.status(403).json("You are not alowed to do that!");
+      res.status(403).json(ACTION_NOT_ALLOW);
     }
   });
 };
@@ -88,5 +92,5 @@ module.exports = {
   verifyToken,
   verifyTokenAndAuthorization,
   verifyTokenAndAdmin,
-  customizeJwtToken
+  customizeJwtToken,
 };

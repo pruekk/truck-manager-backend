@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const passport = require("passport");
 
+const { MONGO_CONNECTION_SUCCESS } = require("./utils/handleResponse");
 const auth = require("./routes/auth");
 const authRoute = auth.router;
 const googleStrategy = auth.strategy;
@@ -19,7 +20,7 @@ dotenv.config();
 
 mongoose
   .connect(process.env.MONGO_URL)
-  .then(() => console.log("DB Connection Successfull!"))
+  .then(() => console.log(MONGO_CONNECTION_SUCCESS))
   .catch((err) => {
     console.log(err);
   });
