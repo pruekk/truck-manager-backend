@@ -9,6 +9,8 @@ const router = require("express").Router();
 //CREATE
 router.post("/", verifyTokenAndAdmin, async (req, res) => {
   const newCar = new Car(req.body);
+  newCar.editBy = req.user.email;
+  console.log(newCar);
   try {
     const savedCar = await newCar.save();
     res.status(200).json(savedCar);

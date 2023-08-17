@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const TripSchema = new mongoose.Schema(
   {
-    factoryId: { type: String, required: true, unique: true },
+    factoryId: { type: String, required: true },
     tripName: {
       type: String,
       enum: [
@@ -18,6 +18,7 @@ const TripSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+TripSchema.index({ factoryId: 1, tripName: 1, date: 1 }, { unique: true });
 
 module.exports = mongoose.model("Trip", TripSchema);
 
