@@ -1,27 +1,11 @@
 const router = require("express").Router();
-const passport = require("passport");
 const User = require("../models/base/User");
 const {
-  verifyTokenAndAdmin,
   customizeJwtToken,
 } = require("../utils/verifyToken");
 
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const strategy = new GoogleStrategy(
-  {
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL,
-  },
-  async (accessToken, refreshToken, profile, done) => {
-    try {
-      const customToken = await customizeJwtToken(profile.emails[0].value);
-      return done(null, { ...profile, access_token: customToken });
-    } catch (err) {
-      return done(err, null);
-    }
-  }
-);
+const { OAuth2Client } = require("google-auth-library");
+const Client = new OAuth2Client();
 
 //REGISTER
 router.post("/register", async (req, res) => {
@@ -57,23 +41,20 @@ router.post("/login-postman", async (req, res) => {
 });
 
 //LOGIN
-router.get(
-  "/login",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+router.post("/login", async (req, res) => {
+  try {
+    const ticket = await Client.verifyIdToken({
+      idToken: req.body.credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
 
-//Google OAuth Callback
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
-    res.redirect("/");
+    const customToken = await customizeJwtToken(payload['email']);
+    console.log(`User: ${payload['email']} login!`);
+    res.status(200).json(customToken);
+  } catch (err) {
+    res.status(500).json(err);
   }
-);
+});
 
-//OAuth Full Cycle Get accessToken and refreshToken from DB
-// router.post("/token", (req, res) => {
-//   res.status(200).json({});
-// });
-
-module.exports = { router, strategy };
+module.exports = router;
