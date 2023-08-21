@@ -64,6 +64,10 @@ const ResponseStatus = {
     status_code: 16,
     message: "You are not authenticated!",
   },
+  ACCOUNT_LOGIN_TIMEOUT: {
+    status_code: 17,
+    message: "The login session has timed out. Please log in again.",
+  },
 };
 
 module.exports = ResponseStatus;

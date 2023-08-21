@@ -6,6 +6,7 @@ const {
   USER_NOT_FOUND,
   USER_NOT_LOGIN,
   ACTION_NOT_ALLOW,
+  ACCOUNT_LOGIN_TIMEOUT,
 } = require("./handleResponse");
 
 const customizeJwtToken = async (reqEmail) => {
@@ -35,9 +36,14 @@ const verifyToken = (req, res, next) => {
       ? req.headers.authorization.split(" ")[1]
       : req.user.access_token;
     jwt.verify(jwtToken, process.env.JWT_TOKEN, (err, user) => {
-      if (err) res.status(403).json(ACCOUNT_LOGIN_FAILED);
+      if (err) res.status(401).json(ACCOUNT_LOGIN_FAILED);
 
-      !user.is_actived && res.status(400).json(ACCOUNT_NOT_ACTIVED);
+      !user.is_actived && res.status(401).json(ACCOUNT_NOT_ACTIVED);
+
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (user.exp && user.exp < currentTime) {
+        res.status(401).json(ACCOUNT_LOGIN_TIMEOUT);
+      }
 
       req.user = user;
       next();
