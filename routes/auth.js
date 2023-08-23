@@ -1,8 +1,7 @@
 const router = require("express").Router();
 const User = require("../models/base/User");
-const {
-  customizeJwtToken,
-} = require("../utils/verifyToken");
+const { delay } = require("../utils/delay");
+const { customizeJwtToken } = require("../utils/verifyToken");
 
 const { OAuth2Client } = require("google-auth-library");
 const Client = new OAuth2Client();
@@ -29,9 +28,9 @@ router.post("/register", async (req, res) => {
 router.post("/login-postman", async (req, res) => {
   if (req.headers.host.includes("localhost")) {
     try {
-      const customToken = await customizeJwtToken(req.body.email);
-      console.log(`User: ${req.body.email} login!`);
-      res.status(200).json(customToken);
+      const customTokenWithEmail = await customizeJwtToken(req.body.email);
+      console.info(`${new Date()} User: ${req.body.email} login!`);
+      res.status(200).json(customTokenWithEmail);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -49,9 +48,10 @@ router.post("/login", async (req, res) => {
     });
     const payload = ticket.getPayload();
 
-    const customToken = await customizeJwtToken(payload['email']);
-    console.log(`User: ${payload['email']} login!`);
-    res.status(200).json(customToken);
+    const customTokenWithEmail = await customizeJwtToken(payload["email"]);
+    console.info(`${new Date()} User: ${payload["email"]} login!`);
+    // await delay(5);
+    res.status(200).json(customTokenWithEmail);
   } catch (err) {
     res.status(500).json(err);
   }

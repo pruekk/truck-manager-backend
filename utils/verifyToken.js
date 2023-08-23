@@ -16,7 +16,7 @@ const customizeJwtToken = async (reqEmail) => {
 
   !user && res.status(401).json(USER_NOT_FOUND);
 
-  return jwt.sign(
+  const customToken = jwt.sign(
     {
       id: user._id,
       email: user.email,
@@ -28,6 +28,11 @@ const customizeJwtToken = async (reqEmail) => {
     process.env.JWT_TOKEN,
     { expiresIn: "10h" }
   );
+
+  return {
+    customToken: customToken,
+    email: user.email,
+  };
 };
 
 const verifyToken = (req, res, next) => {
@@ -41,7 +46,7 @@ const verifyToken = (req, res, next) => {
       !user.is_actived && res.status(401).json(ACCOUNT_NOT_ACTIVED);
 
       const currentTime = Math.floor(Date.now() / 1000);
-      if (user.exp && user.exp < currentTime) {
+      if (user.exp && currentTime > user.exp) {
         res.status(401).json(ACCOUNT_LOGIN_TIMEOUT);
       }
 
