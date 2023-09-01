@@ -14,7 +14,13 @@ const customizeJwtToken = async (reqEmail) => {
     email: reqEmail,
   });
 
-  !user && res.status(401).json(USER_NOT_FOUND);
+  if (!user) {
+    return {
+      error: true,
+      message: USER_NOT_FOUND,
+      email: reqEmail,
+    };
+  }
 
   const customToken = jwt.sign(
     {
@@ -30,8 +36,13 @@ const customizeJwtToken = async (reqEmail) => {
   );
 
   return {
+    error: false,
     customToken: customToken,
     email: user.email,
+    isAdmin: user.isAdmin,
+    allowedFactories: user.allowedFactories,
+    allowedFeatures: user.allowedFeatures,
+    is_actived: user.is_actived,
   };
 };
 

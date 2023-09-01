@@ -9,12 +9,16 @@ const UserSchema = new mongoose.Schema(
         factoryId: {
           type: String,
         },
+        factoryName: {
+          type: String,
+        },
       },
     ],
     allowedFeatures: [
       {
         name: {
           type: String,
+          unique: true,
         },
         view: {
           type: Boolean,
